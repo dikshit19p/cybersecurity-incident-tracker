@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ SOC Dashboard - Incident Tracking</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="cyber-grid"></div>
+    
+    <div class="container">
+        <header class="cyber-header">
+            <div class="logo">
+                <span class="shield-icon">🛡️</span>
+                <h1>SECURITY OPERATIONS CENTER</h1>
+            </div>
+            <div class="system-status">
+                <span class="status-indicator online"></span>
+                <span>SYSTEM ONLINE</span>
+                <span class="clock">{{ now }}</span>
+            </div>
+        </header>
+
+        <div class="threat-level {{ 'critical' if summary.critical_count > 0 else 'elevated' if summary.high_count > 0 else 'guarded' }}">
+            <span class="threat-label">THREAT LEVEL:</span>
+            <span class="threat-value">
+                {% if summary.critical_count > 0 %}
+                    🔴 CRITICAL - {{ summary.critical_count }} ACTIVE THREATS
+                {% elif summary.high_count > 0 %}
+                    🟠 ELEVATED - {{ summary.high_count }} HIGH SEVERITY
+                {% else %}
+                    🟢 GUARDED - ALL SYSTEMS NORMAL
+                {% endif %}
+            </span>
+        </div>
+        
+        <div style="text-align: right; margin-bottom: 20px;">
+            <a href="{{ url_for('add_incident') }}" class="cyber-btn" style="background: #22c55e; color: white; border-color: #22c55e; padding: 12px 24px; font-size: 14px;">
+                ➕ ADD NEW INCIDENT
+            </a>
+        </div>
+
+        <div class="summary-cards">
+            <div class="cyber-card total">
+                <div class="card-header">
+                    <span class="icon">📊</span>
+                    <h3>TOTAL INCIDENTS</h3>
+                </div>
+                <p class="number">{{ summary.total_incidents }}</p>
+                <div class="card-footer">All Time</div>
+            </div>
+            
+            <div class="cyber-card critical">
+                <div class="card-header">
+                    <span class="icon">🔴</span>
+                    <h3>CRITICAL</h3>
+                </div>
+                <p class="number">{{ summary.critical_count }}</p>
+                <div class="card-footer pulse">Immediate Action Required</div>
+            </div>
+            
+            <div class="cyber-card high">
+                <div class="card-header">
+                    <span class="icon">🟠</span>
+                    <h3>HIGH SEVERITY</h3>
+                </div>
+                <p class="number">{{ summary.high_count }}</p>
+                <div class="card-footer">Priority Response</div>
+            </div>
+            
+            <div class="cyber-card resolved">
+                <div class="card-header">
+                    <span class="icon">✅</span>
+                    <h3>RESOLVED</h3>
+                </div>
+                <p class="number">{{ summary.resolved }}</p>
+                <div class="card-footer">Incidents Closed</div>
+            </div>
+        </div>
+        
+        <div class="cyber-section">
+            <div class="section-header">
+                <h2>⚡ ACTIVE INCIDENTS</h2>
+                <span class="live-indicator">● LIVE</span>
+            </div>
+            <div class="table-container">
+                <table class="cyber-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>TITLE</th>
+                            <th>SEVERITY</th>
+                            <th>STATUS</th>
+                            <th>ASSIGNED TO</th>
+                            <th>TIME OPEN</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for incident in incidents %}
+                        <tr class="incident-row severity-{{ incident.severity }}">
+                            <td class="incident-id">#{{ incident.incident_id }}</td>
+                            <td class="incident-title">{{ incident.title }}</td>
+                            <td>
+                                <span class="severity-badge {{ incident.severity }}">
+                                    {{ incident.severity | upper }}
+                                </span>
+                            </td>
+                            <td class="status-{{ incident.status }}">{{ incident.status | upper }}</td>
+                            <td class="analyst">{{ incident.assigned_to or 'UNASSIGNED' }}</td>
+                            <td class="hours">{{ incident.hours_open }} hrs</td>
+                            <td>
+                                <a href="{{ url_for('view_incident', incident_id=incident.incident_id) }}" class="cyber-btn view">VIEW</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="cyber-section">
+            <div class="section-header">
+                <h2>👥 ANALYST PERFORMANCE</h2>
+            </div>
+            <div class="analyst-grid">
+                {% for analyst in analysts %}
+                <div class="analyst-card">
+                    <div class="analyst-avatar">
+                        {{ analyst.username[0] | upper }}
+                    </div>
+                    <h3>{{ analyst.username }}</h3>
+                    <div class="stats">
+                        <div class="stat">
+                            <span class="stat-value">{{ analyst.total_incidents }}</span>
+                            <span class="stat-label">ASSIGNED</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value resolved">{{ analyst.resolved }}</span>
+                            <span class="stat-label">RESOLVED</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <footer class="cyber-footer">
+            <p>SECURITY INCIDENT TRACKING SYSTEM v1.0 | CLASSIFIED // INTERNAL USE ONLY</p>
+        </footer>
+    </div>
+</body>
+</html>

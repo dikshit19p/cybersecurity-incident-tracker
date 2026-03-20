@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Incident #{{ incident.incident_id }} - SOC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="cyber-grid"></div>
+    <div class="container">
+        <header class="cyber-header">
+            <div class="logo">
+                <span class="shield-icon">🛡️</span>
+                <h1>EDIT INCIDENT #{{ incident.incident_id }}</h1>
+            </div>
+            <a href="{{ url_for('view_incident', incident_id=incident.incident_id) }}" class="cyber-btn back">← BACK</a>
+        </header>
+
+        <div class="cyber-section">
+            <div class="section-header">
+                <h2>✏️ UPDATE INCIDENT</h2>
+            </div>
+            
+            <form method="POST" class="cyber-form">
+                <div class="form-group">
+                    <label>Incident Title *</label>
+                    <input type="text" name="title" value="{{ incident.title }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="4">{{ incident.description or '' }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Category *</label>
+                    <select name="category_id" required>
+                        {% for cat in categories %}
+                            <option value="{{ cat.category_id }}" {% if incident.category_id == cat.category_id %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Severity *</label>
+                    <select name="severity" required>
+                        <option value="low" {% if incident.severity == 'low' %}selected{% endif %}>LOW</option>
+                        <option value="medium" {% if incident.severity == 'medium' %}selected{% endif %}>MEDIUM</option>
+                        <option value="high" {% if incident.severity == 'high' %}selected{% endif %}>HIGH</option>
+                        <option value="critical" {% if incident.severity == 'critical' %}selected{% endif %}>CRITICAL</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Priority (1-5)</label>
+                    <input type="number" name="priority" min="1" max="5" value="{{ incident.priority }}">
+                </div>
+                
+                <div class="form-group">
+                    <label>Status *</label>
+                    <select name="status" required>
+                        <option value="reported" {% if incident.status == 'reported' %}selected{% endif %}>REPORTED</option>
+                        <option value="investigating" {% if incident.status == 'investigating' %}selected{% endif %}>INVESTIGATING</option>
+                        <option value="contained" {% if incident.status == 'contained' %}selected{% endif %}>CONTAINED</option>
+                        <option value="resolved" {% if incident.status == 'resolved' %}selected{% endif %}>RESOLVED</option>
+                        <option value="closed" {% if incident.status == 'closed' %}selected{% endif %}>CLOSED</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Affected Asset</label>
+                    <select name="asset_id">
+                        <option value="">None</option>
+                        {% for asset in assets %}
+                            <option value="{{ asset.asset_id }}" {% if incident.asset_id == asset.asset_id %}selected{% endif %}>
+                                {{ asset.asset_name }} ({{ asset.ip_address }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Assign To</label>
+                    <select name="assigned_to">
+                        <option value="">Unassigned</option>
+                        {% for analyst in analysts %}
+                            <option value="{{ analyst.user_id }}" {% if incident.assigned_to == analyst.user_id %}selected{% endif %}>
+                                {{ analyst.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" class="cyber-btn submit">💾 UPDATE INCIDENT</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

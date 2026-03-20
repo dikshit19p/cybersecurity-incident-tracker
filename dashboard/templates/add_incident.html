@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Incident - SOC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="cyber-grid"></div>
+    <div class="container">
+        <header class="cyber-header">
+            <div class="logo">
+                <span class="shield-icon">🛡️</span>
+                <h1>ADD NEW INCIDENT</h1>
+            </div>
+            <a href="{{ url_for('dashboard') }}" class="cyber-btn back">← BACK TO DASHBOARD</a>
+        </header>
+
+        <div class="cyber-section">
+            <div class="section-header">
+                <h2>📝 CREATE NEW INCIDENT</h2>
+            </div>
+            
+            <form method="POST" class="cyber-form">
+                <div class="form-group">
+                    <label>Incident Title *</label>
+                    <input type="text" name="title" required placeholder="e.g., Ransomware Detected on Server">
+                </div>
+                
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="4" placeholder="Describe the incident in detail..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Category *</label>
+                    <select name="category_id" required>
+                        <option value="">Select Category</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.category_id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Severity *</label>
+                    <select name="severity" required>
+                        <option value="low">LOW - Minor impact</option>
+                        <option value="medium">MEDIUM - Moderate impact</option>
+                        <option value="high">HIGH - Significant impact</option>
+                        <option value="critical">CRITICAL - Severe impact</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Priority (1-5, 1=highest)</label>
+                    <input type="number" name="priority" min="1" max="5" value="3">
+                </div>
+                
+                <div class="form-group">
+                    <label>Affected Asset</label>
+                    <select name="asset_id">
+                        <option value="">Select Asset (Optional)</option>
+                        {% for asset in assets %}
+                            <option value="{{ asset.asset_id }}">{{ asset.asset_name }} ({{ asset.ip_address }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Reported By *</label>
+                    <select name="reported_by" required>
+                        {% for user in users %}
+                            <option value="{{ user.user_id }}">{{ user.username }} ({{ user.username }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Assign To Analyst (Optional)</label>
+                    <select name="assigned_to">
+                        <option value="">Leave Unassigned</option>
+                        {% for analyst in analysts %}
+                            <option value="{{ analyst.user_id }}">{{ analyst.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" class="cyber-btn submit">➕ CREATE INCIDENT</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

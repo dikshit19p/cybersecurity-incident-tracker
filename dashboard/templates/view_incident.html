@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident #{{ incident.incident_id }} - SOC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="cyber-grid"></div>
+    <div class="container">
+        <header class="cyber-header">
+            <div class="logo">
+                <span class="shield-icon">🛡️</span>
+                <h1>INCIDENT #{{ incident.incident_id }}</h1>
+            </div>
+            <div>
+                <a href="{{ url_for('edit_incident', incident_id=incident.incident_id) }}" class="cyber-btn" style="margin-right:10px; background:#f97316; color:white; border-color:#f97316;">✏️ EDIT</a>
+                <a href="{{ url_for('dashboard') }}" class="cyber-btn back">← BACK</a>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="cyber-section">
+            <div class="section-header">
+                <h2>📋 INCIDENT INFORMATION</h2>
+                <span class="severity-badge {{ incident.severity }}">{{ incident.severity | upper }}</span>
+            </div>
+            <div class="info-grid">
+                <div class="info-item"><label>TITLE:</label><p>{{ incident.title }}</p></div>
+                <div class="info-item"><label>DESCRIPTION:</label><p>{{ incident.description or 'N/A' }}</p></div>
+                <div class="info-item"><label>CATEGORY:</label><p>{{ incident.category_name or 'N/A' }}</p></div>
+                <div class="info-item"><label>STATUS:</label><p class="status-{{ incident.status }}">{{ incident.status | upper }}</p></div>
+                <div class="info-item"><label>PRIORITY:</label><p>{{ incident.priority }}/5</p></div>
+                <div class="info-item"><label>ASSET:</label><p>{{ incident.asset_name or 'N/A' }} ({{ incident.ip_address or 'N/A' }})</p></div>
+                <div class="info-item"><label>REPORTED BY:</label><p>{{ incident.reported_by_name }}</p></div>
+                <div class="info-item"><label>ASSIGNED TO:</label><p>{{ incident.assigned_to_name or 'UNASSIGNED' }}</p></div>
+                <div class="info-item"><label>DETECTED:</label><p>{{ incident.detected_at }}</p></div>
+                <div class="info-item"><label>RESOLVED:</label><p>{{ incident.resolved_at or 'NOT RESOLVED' }}</p></div>
+            </div>
+        </div>
+
+        <div class="actions-grid">
+            <div class="cyber-section">
+                <div class="section-header"><h2>✏️ UPDATE STATUS</h2></div>
+                <form action="{{ url_for('update_status', incident_id=incident.incident_id) }}" method="POST" class="cyber-form">
+                    <div class="form-group">
+                        <label>Status:</label>
+                        <select name="status" required>
+                            <option value="reported" {% if incident.status == 'reported' %}selected{% endif %}>REPORTED</option>
+                            <option value="investigating" {% if incident.status == 'investigating' %}selected{% endif %}>INVESTIGATING</option>
+                            <option value="contained" {% if incident.status == 'contained' %}selected{% endif %}>CONTAINED</option>
+                            <option value="resolved" {% if incident.status == 'resolved' %}selected{% endif %}>RESOLVED</option>
+                            <option value="closed" {% if incident.status == 'closed' %}selected{% endif %}>CLOSED</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Assign To:</label>
+                        <select name="analyst_id">
+                            <option value="">Keep Current</option>
+                            {% for analyst in analysts %}
+                                <option value="{{ analyst.user_id }}" {% if incident.assigned_to == analyst.user_id %}selected{% endif %}>{{ analyst.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes:</label>
+                        <textarea name="notes" rows="2" placeholder="Add notes..."></textarea>
+                    </div>
+                    <button type="submit" class="cyber-btn submit">UPDATE</button>
+                </form>
+            </div>
+
+            <div class="cyber-section">
+                <div class="section-header"><h2>➕ ADD ACTION</h2></div>
+                <form action="{{ url_for('add_action', incident_id=incident.incident_id) }}" method="POST" class="cyber-form">
+                    <div class="form-group">
+                        <label>Type:</label>
+                        <select name="action_type" required>
+                            <option value="investigation">INVESTIGATION</option>
+                            <option value="containment">CONTAINMENT</option>
+                            <option value="eradication">ERADICATION</option>
+                            <option value="recovery">RECOVERY</option>
+                            <option value="documentation">DOCUMENTATION</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description:</label>
+                        <textarea name="description" rows="2" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Performed By:</label>
+                        <select name="performed_by" required>
+                            {% for analyst in analysts %}
+                                <option value="{{ analyst.user_id }}">{{ analyst.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Time (min):</label>
+                        <input type="number" name="time_spent" value="0" min="0">
+                    </div>
+                    <button type="submit" class="cyber-btn submit">ADD ACTION</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="cyber-section">
+            <div class="section-header"><h2>📜 ACTIONS TIMELINE</h2></div>
+            <div class="timeline">
+                {% if actions %}
+                    {% for action in actions %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-header">
+                                <span class="action-type">{{ action.action_type | upper }}</span>
+                                <span class="timeline-date">{{ action.performed_at }}</span>
+                            </div>
+                            <p class="timeline-description">{{ action.action_description }}</p>
+                            <div class="timeline-meta">
+                                <span>By: {{ action.performed_by_name }}</span>
+                                {% if action.time_spent_minutes %}<span>Time: {{ action.time_spent_minutes }} min</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-data">No actions recorded.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="danger-zone">
+            <form action="{{ url_for('delete_incident', incident_id=incident.incident_id) }}" method="POST" onsubmit="return confirm('⚠️ Delete incident #{{ incident.incident_id }}?');">
+                <button type="submit" class="cyber-btn delete">🗑️ DELETE INCIDENT</button>
+            </form>
+        </div>
+
+        <footer class="cyber-footer">
+            <p>SECURITY INCIDENT TRACKING SYSTEM v1.0</p>
+        </footer>
+    </div>
+</body>
+</html>
